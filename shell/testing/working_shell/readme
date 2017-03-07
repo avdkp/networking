@@ -1,0 +1,25 @@
+NOTE:
+please link readline library during compilation
+"g++ -o myshell shell_final.cc -lreadline"
+
+
+
+custom commands:
+history -> to see history queue [size = 20]
+kill -> to kill a child process
+jobs -> to see all child processes/jobs
+!-<num> -> to execute last num th command
+
+and 
+all regular commands
+ls, cd ,pwd, etc...
+
+redirection:
+>,<,>>
+
+pipes:
+|
+
+
+
+
