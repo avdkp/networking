@@ -1,0 +1,150 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<arpa/inet.h>
+#include<sys/socket.h>
+#include<signal.h>
+
+struct msg{
+int type;	//1- successful 2-error 3.end of file 4.disconnect 5getlist
+char data[256];
+};
+void get_file(int sock,char *f)
+{
+//	char f[100];
+	//strcpy(f,"downloaded/");
+	//strcat(f,file);
+	//read(sockfd,(char*)&message,sizeof(struct msg));
+	FILE *fp;
+	fp  = fopen(f,"a");
+	if(fp==NULL)
+	{
+				printf("File creation failed!\n");
+				return;
+	}
+	struct msg message;
+	while(1)
+	{
+		memset(&message,0,sizeof(struct msg));
+		read(sock,(char*)&message,sizeof(struct msg));
+		printf("%s",message.data);
+		if(message.type==1)
+		{	
+			fwrite(message.data,1,256,fp);
+		}
+		else if(message.type==3)
+		{
+			int a = strlen(message.data);
+			fwrite(message.data,1,a,fp);
+			fclose(fp);
+			printf("file downloaded successfully...\n");
+			return;
+		}
+		else
+		{
+			printf("%s",message.data);
+			return;
+		}
+		
+	}
+
+
+}
+void query(int sockfd)
+{
+	struct msg message;
+	char name[50];
+	printf("Query type..(1.download,4.disconnect,5.getlist \n");
+	flag:
+	while(1)
+	{
+		memset(&message,'\0',sizeof(struct msg));
+		fflush(stdin);
+		scanf("%d",&message.type);
+		if(message.type==4)
+			return;
+		if(message.type==1||message.type==5)
+		{
+			if(message.type==1)
+			{
+				printf("file name:");
+				scanf("%s",message.data);
+				printf("output file name:");
+				memset(name,'\0',sizeof(name));			
+				scanf("%s",name);	
+			}
+			if(message.type==5)
+			{
+				scanf("%s",message.data);
+			}
+			write(sockfd,(char*)&message,sizeof(struct msg));
+			if(message.type==1)
+				get_file(sockfd,name);
+			//sleep(1);
+			if(message.type==5)
+			
+			while(1)
+			{
+				memset(&message,'\0',sizeof(struct msg));
+				read(sockfd,(char *)&message,sizeof(struct msg));
+
+				if(strcmp(message.data,"done"))
+					printf("%s",message.data);
+				else
+					break;
+				//sleep(1);
+				
+
+			
+
+			}
+			
+		
+		}
+		else
+		{
+			//message.type=4;
+		//write(sockfd,(char*)&message,sizeof(struct msg));
+			printf("please query properly..\n");
+			goto flag;
+			
+		}	 
+	
+	}
+}
+int main(int argc,char **argv)
+{
+	int sockfd;
+	struct sockaddr_in serv_addr;
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+	serv_addr.sin_port = htons(atoi(argv[2]));
+
+
+	sockfd = socket(AF_INET,SOCK_STREAM,0);	
+	if(sockfd == -1)
+	{ 
+		printf("Error creating socket...");
+		return 1; 
+	}
+
+	if( connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
+	{
+		printf("\nError connecting to server...."); 
+		return 1; 
+	}
+
+	printf("connected...\n");
+	
+	query(sockfd);
+	
+	
+	printf("\n....\n"); return 0;
+}
+
+
+
+
+
+
+

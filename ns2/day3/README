@@ -1,0 +1,9 @@
+change tcp agent in 1.tcl
+then run 1.tcl
+
+1). ns 1.tcl &
+
+run calc.py to calculate throughput
+
+2). python calc.py
+
